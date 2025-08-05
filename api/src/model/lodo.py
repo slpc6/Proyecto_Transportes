@@ -5,12 +5,12 @@ class RegistroLodo(BaseModel):
     id: str
     Fecha: str
     Placa: str
-    numViajes: str	
+    numViajes: int	
     Producto: str	
     Destino: str	
     TipoVehiculo: str
-    ValorUnitario: str
-    ValorTotal: str
+    ValorUnitario: int
+    ValorTotal: int
 
 class DatosLodoEnvio(BaseModel):
     registros: List[RegistroLodo]
