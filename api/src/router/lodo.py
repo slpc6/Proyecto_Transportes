@@ -1,23 +1,17 @@
 from fastapi import APIRouter, HTTPException
 import pandas as pd
-import os
 from datetime import datetime
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
-from openpyxl.utils.dataframe import dataframe_to_rows
 
-from model.ceniza import DatosCenizaEnvio
-from util.path import Path
+
+from model.lodo import DatosLodoEnvio
 from util.titulo import generar_titulo
 from util.generar_archivo import generar_archivo
 
 router = APIRouter()
 
-
-@router.post("/ceniza")
-def ceniza(request: DatosCenizaEnvio):
+@router.post('/lodo')
+def lodo(request: DatosLodoEnvio):
     try:
-
         nuevos_datos = []
 
         for registro in request.registros:
@@ -25,17 +19,17 @@ def ceniza(request: DatosCenizaEnvio):
                 'Fecha': registro.fecha,
                 'Placa': registro.placa,
                 'Destino': registro.destino,
+                'Producto': registro.producto,
                 '# de Viajes': registro.numViajes,
                 'Tipo de Vehículo': registro.tipoVehiculo,
                 'Valor Unitario': registro.valorUnitario,
                 'Valor Total': registro.valorTotal
             })
-        
         df_final = pd.DataFrame(nuevos_datos)
         titulo = generar_titulo('ceniza')
         headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers)
+        total_valor = generar_archivo(df_final,titulo, headers)
         
         return {
             "success": True,
