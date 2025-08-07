@@ -31,7 +31,7 @@ def escoria(request: DatosEscoriaEnvio):
         titulo = generar_titulo('escoria')
         headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers)
+        total_valor = generar_archivo(df_final, titulo, headers, 'ESCORIA')
         
         return {
             "success": True,

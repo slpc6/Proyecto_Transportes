@@ -27,7 +27,7 @@ def interno(request: DatosInternoEnvio):
         titulo = generar_titulo('interno')
         headers = ['Fecha', 'Placa', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers)
+        total_valor = generar_archivo(df_final, titulo, headers, 'INTERNOS')
         
         return {
             "success": True,

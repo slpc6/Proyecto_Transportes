@@ -6,8 +6,8 @@ import os
 
 from util.path import Path
 
-def generar_archivo(df_final: DataFrame, titulo: str, headers: list[str])-> int:
-    output_file = os.path.join(Path.OUTPUT, "CENIZA.xlsx")
+def generar_archivo(df_final: DataFrame, titulo: str, headers: list[str], nombre: str = 'ARCHIVO')-> int:
+    output_file = os.path.join(Path.OUTPUT, f"{nombre}.xlsx")
     os.makedirs(Path.OUTPUT, exist_ok=True)
 
     wb = Workbook()

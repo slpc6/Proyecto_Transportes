@@ -35,7 +35,7 @@ def ceniza(request: DatosCenizaEnvio):
         titulo = generar_titulo('ceniza')
         headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers)
+        total_valor = generar_archivo(df_final, titulo, headers, 'CENIZA')
         
         return {
             "success": True,
