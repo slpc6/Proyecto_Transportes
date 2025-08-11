@@ -1,0 +1,40 @@
+services:
+
+  python-api:
+    image: python-api
+    build:
+      context: api/   
+    container_name: python-api  
+    hostname: python-api  
+    networks:
+      - red1 
+    ports:
+      - "8000:8000"  
+    restart: always  
+    profiles:
+      - full  
+      - back
+
+  react-front:
+    image: react-front
+    build: 
+      context: frontend/
+    container_name: react-front
+    hostname: react-front
+    networks:
+      - red1
+    environment:
+      - TZ
+    ports:
+      - '4173:4173'
+    restart: always
+    depends_on:
+      - python-api
+    profiles:
+      - full
+      - front
+
+networks:
+  red1:
+    name: red1
+    driver: bridge

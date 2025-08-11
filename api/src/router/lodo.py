@@ -27,7 +27,7 @@ def lodo(request: DatosLodoEnvio):
             })
         df_final = pd.DataFrame(nuevos_datos)
         titulo = generar_titulo('ceniza')
-        headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        headers = ['Fecha', 'Placa', 'Destino', 'Producto', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
         total_valor = generar_archivo(df_final,titulo, headers, 'LODO')
         

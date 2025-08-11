@@ -3,14 +3,14 @@ from typing import List
 
 class RegistroLodo(BaseModel):
     id: str
-    Fecha: str
-    Placa: str
+    fecha: str
+    placa: str
     numViajes: int	
-    Producto: str	
-    Destino: str	
-    TipoVehiculo: str
-    ValorUnitario: int
-    ValorTotal: int
+    producto: str	
+    destino: str	
+    tipoVehiculo: str
+    valorUnitario: int
+    valorTotal: int
 
 class DatosLodoEnvio(BaseModel):
     registros: List[RegistroLodo]
