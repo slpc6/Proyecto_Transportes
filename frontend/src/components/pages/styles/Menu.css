@@ -1,0 +1,82 @@
+.menu-page-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  padding: 20px;
+}
+
+.menu-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 720px;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  text-align: center;
+}
+
+.logo-slot {
+  width: 180px;
+  height: 80px;
+  margin: 0 auto 20px;
+  border-radius: 12px;
+  background: repeating-linear-gradient(45deg, #eef2ff, #eef2ff 10px, #e2e8f0 10px, #e2e8f0 20px);
+}
+
+.menu-title {
+  margin: 10px 0 30px;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #0ea5e9, #6366f1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.menu-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+
+.menu-button {
+  appearance: none;
+  border: none;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.35);
+}
+
+.menu-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
+}
+
+.menu-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .menu-card {
+    padding: 28px 20px;
+  }
+
+  .logo-slot {
+    width: 160px;
+    height: 70px;
+  }
+
+  .menu-title {
+    font-size: 1.6rem;
+  }
+}
+
+

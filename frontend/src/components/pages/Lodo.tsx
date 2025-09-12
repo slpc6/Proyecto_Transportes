@@ -302,7 +302,7 @@ const Lodo: React.FC = () => {
           )}
         </div>
 
-        <a href="/main" className="back-button">← Volver al menú</a>
+        <a href="/menu" className="back-button">← Volver al menú</a>
       </div>
     </div>
   );

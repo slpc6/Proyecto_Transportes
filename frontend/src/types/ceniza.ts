@@ -18,9 +18,33 @@ export interface NuevoRegistroCeniza {
   valorUnitario: number;
 }
 
+export interface RegistroCenizaSubtabla {
+  id: string;
+  fecha: string;
+  placa: string;
+  material: string;
+  numViajes: number;
+  tipoVehiculo: string;
+  destino: string;
+  valorUnitario: number;
+  valorTotal: number;
+}
+
+export interface NuevoRegistroCenizaSubtabla {
+  fecha: string;
+  placa: string;
+  material: string;
+  numViajes: number;
+  tipoVehiculo: string;
+  destino: string;
+  valorUnitario: number;
+}
+
 export interface DatosCenizaEnvio {
   registros: RegistroCeniza[];
+  registrosSubtabla: RegistroCenizaSubtabla[];
   total: number;
+  totalSubtabla: number;
 }
 
 export interface RespuestaAPI {

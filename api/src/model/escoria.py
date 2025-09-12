@@ -11,6 +11,18 @@ class RegistroEscoria(BaseModel):
     valorUnitario: float
     valorTotal: float
 
+class RegistroEscoriaSubtabla(BaseModel):
+    id: str
+    fecha: str
+    placa: str
+    numViajes: int
+    destino: str
+    tipoVehiculo: str
+    valorUnitario: float
+    valorTotal: float
+
 class DatosEscoriaEnvio(BaseModel):
     registros: List[RegistroEscoria]
-    total: float 
+    registrosSubtabla: List[RegistroEscoriaSubtabla]
+    total: float
+    totalSubtabla: float 

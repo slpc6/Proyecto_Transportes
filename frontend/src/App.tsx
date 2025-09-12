@@ -34,7 +34,7 @@ function App() {
         {routes.map(({ path, Component }) => (
           <Route key={path} path={path} element={<Component />} />
         ))}
-        <Route path="*" element={<Navigate to="/main" replace />} />
+        <Route path="*" element={<Navigate to="/menu" replace />} />
       </Routes>
     </BrowserRouter>
   )

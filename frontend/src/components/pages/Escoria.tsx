@@ -1,16 +1,25 @@
 import React, { useState } from 'react';
-import type { RegistroEscoria, NuevoRegistroEscoria } from '../../types/escoria';
+import type { RegistroEscoria, NuevoRegistroEscoria, RegistroEscoriaSubtabla, NuevoRegistroEscoriaSubtabla } from '../../types/escoria';
 import { envioService } from '../../service/escoria';
 import './styles/Page.css';
 import './styles/Table.css';
 
 const Escoria: React.FC = () => {
   const [registros, setRegistros] = useState<RegistroEscoria[]>([]);
+  const [registrosSubtabla, setRegistrosSubtabla] = useState<RegistroEscoriaSubtabla[]>([]);
   const [nuevoRegistro, setNuevoRegistro] = useState<NuevoRegistroEscoria>({
     fecha: '',
     placa: '',
     destino: '',
     numViajes: 0,
+    tipoVehiculo: 'Volqueta doble troque',
+    valorUnitario: 0
+  });
+  const [nuevoRegistroSubtabla, setNuevoRegistroSubtabla] = useState<NuevoRegistroEscoriaSubtabla>({
+    fecha: '',
+    placa: '',
+    numViajes: 0,
+    destino: '',
     tipoVehiculo: 'Volqueta doble troque',
     valorUnitario: 0
   });
@@ -38,6 +47,21 @@ const Escoria: React.FC = () => {
     setRegistros(registros.filter(registro => registro.id !== id));
   };
 
+  const agregarRegistroSubtabla = () => {
+    if (nuevoRegistroSubtabla.fecha && nuevoRegistroSubtabla.placa && nuevoRegistroSubtabla.numViajes > 0 && nuevoRegistroSubtabla.valorUnitario > 0) {
+      const registro: RegistroEscoriaSubtabla = {
+        id: Date.now().toString(),
+        ...nuevoRegistroSubtabla,
+        valorTotal: calcularValorTotal(nuevoRegistroSubtabla.numViajes, nuevoRegistroSubtabla.valorUnitario)
+      };
+      setRegistrosSubtabla([...registrosSubtabla, registro]);
+    }
+  };
+
+  const eliminarRegistroSubtabla = (id: string) => {
+    setRegistrosSubtabla(registrosSubtabla.filter(registro => registro.id !== id));
+  };
+
   const editarRegistro = (id: string, campo: keyof RegistroEscoria, valor: string | number) => {
     setRegistros(registros.map(registro => {
       if (registro.id === id) {
@@ -54,13 +78,32 @@ const Escoria: React.FC = () => {
     }));
   };
 
+  const editarRegistroSubtabla = (id: string, campo: keyof RegistroEscoriaSubtabla, valor: string | number) => {
+    setRegistrosSubtabla(registrosSubtabla.map(registro => {
+      if (registro.id === id) {
+        const registroActualizado = { ...registro, [campo]: valor };
+        if (campo === 'numViajes' || campo === 'valorUnitario') {
+          registroActualizado.valorTotal = calcularValorTotal(
+            campo === 'numViajes' ? Number(valor) : registro.numViajes,
+            campo === 'valorUnitario' ? Number(valor) : registro.valorUnitario
+          );
+        }
+        return registroActualizado;
+      }
+      return registro;
+    }));
+  };
+
   const enviarDatos = async () => {
     const sumaTotal = registros.reduce((suma, registro) => suma + registro.valorTotal, 0);
+    const sumaTotalSubtabla = registrosSubtabla.reduce((suma, registro) => suma + registro.valorTotal, 0);
     
     // Validar datos antes de enviar
     const validacion = envioService.validarDatosEscoria({
       registros,
-      total: sumaTotal
+      registrosSubtabla,
+      total: sumaTotal,
+      totalSubtabla: sumaTotalSubtabla
     });
 
     if (!validacion.valido) {
@@ -72,12 +115,15 @@ const Escoria: React.FC = () => {
     try {
       const resultado = await envioService.enviarEscoria({
         registros,
-        total: sumaTotal
+        registrosSubtabla,
+        total: sumaTotal,
+        totalSubtabla: sumaTotalSubtabla
       });
 
       if (resultado.success) {
         alert(resultado.message);
         setRegistros([]); // Limpiar registros después de enviar exitosamente
+        setRegistrosSubtabla([]); // Limpiar registros de sub-tabla
       } else {
         alert(resultado.message);
       }
@@ -90,6 +136,7 @@ const Escoria: React.FC = () => {
   };
 
   const sumaTotal = registros.reduce((suma, registro) => suma + registro.valorTotal, 0);
+  const sumaTotalSubtabla = registrosSubtabla.reduce((suma, registro) => suma + registro.valorTotal, 0);
 
   return (
     <div className="page-container">
@@ -271,7 +318,175 @@ const Escoria: React.FC = () => {
           )}
         </div>
 
-        <a href="/main" className="back-button">← Volver al menú</a>
+        {/* Formulario para agregar nuevo registro de sub-tabla */}
+        <div className="form-section">
+          <h3>Agregar Nuevo Registro - Sub-tabla</h3>
+          <div className="form-grid">
+            <div className="form-group">
+              <label>Fecha:</label>
+              <input
+                type="date"
+                value={nuevoRegistroSubtabla.fecha}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, fecha: e.target.value})}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Placa:</label>
+              <input
+                type="text"
+                value={nuevoRegistroSubtabla.placa}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, placa: e.target.value})}
+                placeholder="ABC-123"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label># de Viajes:</label>
+              <input
+                type="number"
+                value={nuevoRegistroSubtabla.numViajes}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, numViajes: Number(e.target.value)})}
+                min="1"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Destino:</label>
+              <input
+                type="text"
+                value={nuevoRegistroSubtabla.destino}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, destino: e.target.value})}
+                placeholder="Ubicación de destino"
+              />
+            </div>
+            
+            <div className="form-group">
+              <label>Tipo de Vehículo:</label>
+              <select
+                value={nuevoRegistroSubtabla.tipoVehiculo}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, tipoVehiculo: e.target.value})}
+              >
+                {tiposVehiculo.map(tipo => (
+                  <option key={tipo} value={tipo}>{tipo}</option>
+                ))}
+              </select>
+            </div>
+            
+            <div className="form-group">
+              <label>Valor Unitario:</label>
+              <input
+                type="number"
+                value={nuevoRegistroSubtabla.valorUnitario}
+                onChange={(e) => setNuevoRegistroSubtabla({...nuevoRegistroSubtabla, valorUnitario: Number(e.target.value)})}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            
+            <div className="form-group">
+              <button onClick={agregarRegistroSubtabla} className="add-button">
+                Agregar Registro Sub-tabla
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Tabla de registros de sub-tabla */}
+        <div className="table-section">
+          <h3>Registros de ESCORIA - Sub-tabla</h3>
+          {registrosSubtabla.length === 0 ? (
+            <p className="no-data">No hay registros de sub-tabla aún. Agrega el primer registro arriba.</p>
+          ) : (
+            <div className="table-container">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>Fecha</th>
+                    <th>Placa</th>
+                    <th># Viajes</th>
+                    <th>Destino</th>
+                    <th>Tipo de Vehículo</th>
+                    <th>Valor Unitario</th>
+                    <th>Valor Total</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {registrosSubtabla.map((registro) => (
+                    <tr key={registro.id}>
+                      <td>
+                        <input
+                          type="date"
+                          value={registro.fecha}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'fecha', e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={registro.placa}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'placa', e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={registro.numViajes}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'numViajes', Number(e.target.value))}
+                          min="1"
+                        />
+                      </td>
+                      <td>
+                        <input
+                          type="text"
+                          value={registro.destino}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'destino', e.target.value)}
+                        />
+                      </td>
+                      <td>
+                        <select
+                          value={registro.tipoVehiculo}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'tipoVehiculo', e.target.value)}
+                        >
+                          {tiposVehiculo.map(tipo => (
+                            <option key={tipo} value={tipo}>{tipo}</option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>
+                        <input
+                          type="number"
+                          value={registro.valorUnitario}
+                          onChange={(e) => editarRegistroSubtabla(registro.id, 'valorUnitario', Number(e.target.value))}
+                          min="0"
+                          step="0.01"
+                        />
+                      </td>
+                      <td className="valor-total">
+                        ${registro.valorTotal.toLocaleString()}
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => eliminarRegistroSubtabla(registro.id)}
+                          className="delete-button"
+                        >
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              
+              <div className="total-section">
+                <h3>Total Sub-tabla: ${sumaTotalSubtabla.toLocaleString()}</h3>
+              </div>
+            </div>
+          )}
+        </div>
+
+        <a href="/menu" className="back-button">← Volver al menú</a>
       </div>
     </div>
   );

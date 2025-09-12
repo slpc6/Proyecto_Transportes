@@ -9,7 +9,7 @@ from openpyxl.utils.dataframe import dataframe_to_rows
 from model.ceniza import DatosCenizaEnvio
 from util.path import Path
 from util.titulo import generar_titulo
-from util.generar_archivo import generar_archivo
+from util.generar_archivo import generar_archivo_multiple_hojas
 
 router = APIRouter()
 
@@ -17,9 +17,8 @@ router = APIRouter()
 @router.post("/ceniza")
 def ceniza(request: DatosCenizaEnvio):
     try:
-
+        # Procesar datos de la tabla principal
         nuevos_datos = []
-
         for registro in request.registros:
             nuevos_datos.append({
                 'Fecha': registro.fecha,
@@ -31,20 +30,51 @@ def ceniza(request: DatosCenizaEnvio):
                 'Valor Total': registro.valorTotal
             })
         
-        df_final = pd.DataFrame(nuevos_datos)
-        titulo = generar_titulo('ceniza')
-        headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        df_principal = pd.DataFrame(nuevos_datos)
+        
+        # Procesar datos de la sub-tabla
+        nuevos_datos_subtabla = []
+        for registro in request.registrosSubtabla:
+            nuevos_datos_subtabla.append({
+                'Fecha': registro.fecha,
+                'Placa': registro.placa,
+                'Material': registro.material,
+                '# de Viajes': registro.numViajes,
+                'Tipo de Vehículo': registro.tipoVehiculo,
+                'Destino': registro.destino,
+                'Valor Unitario': registro.valorUnitario,
+                'Valor Total': registro.valorTotal
+            })
+        
+        df_subtabla = pd.DataFrame(nuevos_datos_subtabla)
+        
+        # Generar títulos
+        titulo_principal = generar_titulo('ceniza')
+        titulo_subtabla = generar_titulo('ceniza') + " - Sub-tabla"
+        
+        # Headers
+        headers_principal = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        headers_subtabla = ['Fecha', 'Placa', 'Material', '# de Viajes', 'Tipo de Vehículo', 'Destino', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers, 'CENIZA')
+        # Generar archivo con múltiples hojas
+        total_principal, total_subtabla = generar_archivo_multiple_hojas(
+            df_principal, df_subtabla, 
+            titulo_principal, titulo_subtabla,
+            headers_principal, headers_subtabla, 
+            'CENIZA'
+        )
         
         return {
             "success": True,
-            "message": f"Archivo guardado exitosamente",
+            "message": f"Archivo guardado exitosamente con dos hojas",
             "registros_procesados": len(request.registros),
-            "total": request.total,
+            "registros_subtabla_procesados": len(request.registrosSubtabla),
+            "total_principal": request.total,
+            "total_subtabla": request.totalSubtabla,
             "fecha_procesamiento": datetime.now().isoformat(),
-            "titulo_generado": titulo,
-            "total_calculado": float(total_valor)
+            "titulo_generado": titulo_principal,
+            "total_calculado_principal": float(total_principal),
+            "total_calculado_subtabla": float(total_subtabla)
         }
         
     except Exception as e:

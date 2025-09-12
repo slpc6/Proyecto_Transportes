@@ -4,7 +4,7 @@ from datetime import datetime
 
 from model.escoria import DatosEscoriaEnvio
 from util.titulo import generar_titulo
-from util.generar_archivo import generar_archivo
+from util.generar_archivo import generar_archivo_multiple_hojas
 
 
 router = APIRouter()
@@ -13,9 +13,8 @@ router = APIRouter()
 @router.post("/escoria")
 def escoria(request: DatosEscoriaEnvio):
     try:
-
+        # Procesar datos de la tabla principal
         nuevos_datos = []
-
         for registro in request.registros:
             nuevos_datos.append({
                 'Fecha': registro.fecha,
@@ -27,20 +26,50 @@ def escoria(request: DatosEscoriaEnvio):
                 'Valor Total': registro.valorTotal
             })
         
-        df_final = pd.DataFrame(nuevos_datos)
-        titulo = generar_titulo('escoria')
-        headers = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        df_principal = pd.DataFrame(nuevos_datos)
+        
+        # Procesar datos de la sub-tabla
+        nuevos_datos_subtabla = []
+        for registro in request.registrosSubtabla:
+            nuevos_datos_subtabla.append({
+                'Fecha': registro.fecha,
+                'Placa': registro.placa,
+                '# de Viajes': registro.numViajes,
+                'Destino': registro.destino,
+                'Tipo de Vehículo': registro.tipoVehiculo,
+                'Valor Unitario': registro.valorUnitario,
+                'Valor Total': registro.valorTotal
+            })
+        
+        df_subtabla = pd.DataFrame(nuevos_datos_subtabla)
+        
+        # Generar títulos
+        titulo_principal = generar_titulo('escoria')
+        titulo_subtabla = generar_titulo('escoria') + " - Sub-tabla"
+        
+        # Headers
+        headers_principal = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        headers_subtabla = ['Fecha', 'Placa', '# de Viajes', 'Destino', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
 
-        total_valor = generar_archivo(df_final, titulo, headers, 'ESCORIA')
+        # Generar archivo con múltiples hojas
+        total_principal, total_subtabla = generar_archivo_multiple_hojas(
+            df_principal, df_subtabla, 
+            titulo_principal, titulo_subtabla,
+            headers_principal, headers_subtabla, 
+            'ESCORIA'
+        )
         
         return {
             "success": True,
-            "message": f"Archivo guardado exitosamente",
+            "message": f"Archivo guardado exitosamente con dos hojas",
             "registros_procesados": len(request.registros),
-            "total": request.total,
+            "registros_subtabla_procesados": len(request.registrosSubtabla),
+            "total_principal": request.total,
+            "total_subtabla": request.totalSubtabla,
             "fecha_procesamiento": datetime.now().isoformat(),
-            "titulo_generado": titulo,
-            "total_calculado": float(total_valor)
+            "titulo_generado": titulo_principal,
+            "total_calculado_principal": float(total_principal),
+            "total_calculado_subtabla": float(total_subtabla)
         }
         
     except Exception as e:
