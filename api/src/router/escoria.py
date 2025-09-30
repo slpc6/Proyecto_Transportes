@@ -1,22 +1,28 @@
+"""EndPoint para generar el archivo para transportes de escoria"""
+
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
 import pandas as pd
-from datetime import datetime
 
 from model.escoria import DatosEscoriaEnvio
 from util.titulo import generar_titulo
-from util.generar_archivo import generar_archivo_multiple_hojas
+from util.generar_archivo import generar_archivo
 
 
 router = APIRouter()
 
 
 @router.post("/escoria")
-def escoria(request: DatosEscoriaEnvio):
+def escoria(request: DatosEscoriaEnvio) -> dict:
+    """Tabla para los transportes de escoria.
+    :args:
+    - request: Ver model/escoria.
+    :returns:
+    - Diccionario con la informacion del documento generado.
+    
+    """
     try:
-        # Procesar datos de la tabla principal
-        nuevos_datos = []
-        for registro in request.registros:
-            nuevos_datos.append({
+        nuevos_datos = [{
                 'Fecha': registro.fecha,
                 'Placa': registro.placa,
                 'Destino': registro.destino,
@@ -24,53 +30,29 @@ def escoria(request: DatosEscoriaEnvio):
                 'Tipo de Vehículo': registro.tipoVehiculo,
                 'Valor Unitario': registro.valorUnitario,
                 'Valor Total': registro.valorTotal
-            })
+            } for registro in request.registros]
         
-        df_principal = pd.DataFrame(nuevos_datos)
-        
-        # Procesar datos de la sub-tabla
-        nuevos_datos_subtabla = []
-        for registro in request.registrosSubtabla:
-            nuevos_datos_subtabla.append({
-                'Fecha': registro.fecha,
-                'Placa': registro.placa,
-                '# de Viajes': registro.numViajes,
-                'Destino': registro.destino,
-                'Tipo de Vehículo': registro.tipoVehiculo,
-                'Valor Unitario': registro.valorUnitario,
-                'Valor Total': registro.valorTotal
-            })
-        
-        df_subtabla = pd.DataFrame(nuevos_datos_subtabla)
-        
-        # Generar títulos
-        titulo_principal = generar_titulo('escoria')
-        titulo_subtabla = generar_titulo('escoria') + " - Sub-tabla"
-        
-        # Headers
-        headers_principal = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
-        headers_subtabla = ['Fecha', 'Placa', '# de Viajes', 'Destino', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
+        datos = pd.DataFrame(nuevos_datos)
+        titulo: str = generar_titulo('escoria')
+        headers: list(str) = ['Fecha',
+                                'Placa',
+                                'Destino',
+                                '# de Viajes',
+                                'Tipo de Vehículo',
+                                'Valor Unitario',
+                                'Valor Total']
+        total_valor = generar_archivo(datos, titulo, headers, 'ESCORIA')
 
-        # Generar archivo con múltiples hojas
-        total_principal, total_subtabla = generar_archivo_multiple_hojas(
-            df_principal, df_subtabla, 
-            titulo_principal, titulo_subtabla,
-            headers_principal, headers_subtabla, 
-            'ESCORIA'
-        )
-        
         return {
             "success": True,
-            "message": f"Archivo guardado exitosamente con dos hojas",
+            "message": "Archivo guardado exitosamente",
             "registros_procesados": len(request.registros),
-            "registros_subtabla_procesados": len(request.registrosSubtabla),
-            "total_principal": request.total,
-            "total_subtabla": request.totalSubtabla,
+            "total": request.total,
             "fecha_procesamiento": datetime.now().isoformat(),
-            "titulo_generado": titulo_principal,
-            "total_calculado_principal": float(total_principal),
-            "total_calculado_subtabla": float(total_subtabla)
+            "titulo_generado": titulo,
+            "total_calculado": float(total_valor)
         }
-        
+
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al procesar los datos: {str(e)}")
+        raise HTTPException(status_code=500,
+                            detail=f"Error al procesar los datos: {str(e)}") from e

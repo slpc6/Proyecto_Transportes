@@ -1,26 +1,28 @@
+"""EndPoint para generar el archivo para transportes de ceniza"""
+
+from datetime import datetime
 from fastapi import APIRouter, HTTPException
 import pandas as pd
-import os
-from datetime import datetime
-from openpyxl import Workbook
-from openpyxl.styles import Font, Alignment
-from openpyxl.utils.dataframe import dataframe_to_rows
 
 from model.ceniza import DatosCenizaEnvio
-from util.path import Path
 from util.titulo import generar_titulo
-from util.generar_archivo import generar_archivo_multiple_hojas
+from util.generar_archivo import generar_archivo
+
 
 router = APIRouter()
 
 
 @router.post("/ceniza")
 def ceniza(request: DatosCenizaEnvio):
+    """Tabla para los transportes de ceniza.
+    :args:
+    - request: Ver model/ceniza.
+    :returns:
+    - Diccionario con la informacion del documento generado.
+    
+    """
     try:
-        # Procesar datos de la tabla principal
-        nuevos_datos = []
-        for registro in request.registros:
-            nuevos_datos.append({
+        nuevos_datos = [{
                 'Fecha': registro.fecha,
                 'Placa': registro.placa,
                 'Destino': registro.destino,
@@ -28,55 +30,28 @@ def ceniza(request: DatosCenizaEnvio):
                 'Tipo de Vehículo': registro.tipoVehiculo,
                 'Valor Unitario': registro.valorUnitario,
                 'Valor Total': registro.valorTotal
-            })
-        
-        df_principal = pd.DataFrame(nuevos_datos)
-        
-        # Procesar datos de la sub-tabla
-        nuevos_datos_subtabla = []
-        for registro in request.registrosSubtabla:
-            nuevos_datos_subtabla.append({
-                'Fecha': registro.fecha,
-                'Placa': registro.placa,
-                'Material': registro.material,
-                '# de Viajes': registro.numViajes,
-                'Tipo de Vehículo': registro.tipoVehiculo,
-                'Destino': registro.destino,
-                'Valor Unitario': registro.valorUnitario,
-                'Valor Total': registro.valorTotal
-            })
-        
-        df_subtabla = pd.DataFrame(nuevos_datos_subtabla)
-        
-        # Generar títulos
-        titulo_principal = generar_titulo('ceniza')
-        titulo_subtabla = generar_titulo('ceniza') + " - Sub-tabla"
-        
-        # Headers
-        headers_principal = ['Fecha', 'Placa', 'Destino', '# de Viajes', 'Tipo de Vehículo', 'Valor Unitario', 'Valor Total']
-        headers_subtabla = ['Fecha', 'Placa', 'Material', '# de Viajes', 'Tipo de Vehículo', 'Destino', 'Valor Unitario', 'Valor Total']
+            } for registro in request.registros]
 
-        # Generar archivo con múltiples hojas
-        total_principal, total_subtabla = generar_archivo_multiple_hojas(
-            df_principal, df_subtabla, 
-            titulo_principal, titulo_subtabla,
-            headers_principal, headers_subtabla, 
-            'CENIZA'
-        )
-        
+        datos = pd.DataFrame(nuevos_datos)
+        titulo: str = generar_titulo('ceniza')
+        headers: list(str) = ['Fecha',
+                                'Placa',
+                                'Destino',
+                                '# de Viajes',
+                                'Tipo de Vehículo',
+                                'Valor Unitario',
+                                'Valor Total']
+        total_valor = generar_archivo(datos, titulo, headers, 'CENIZA')
+
         return {
             "success": True,
-            "message": f"Archivo guardado exitosamente con dos hojas",
+            "message": "Archivo guardado exitosamente",
             "registros_procesados": len(request.registros),
-            "registros_subtabla_procesados": len(request.registrosSubtabla),
-            "total_principal": request.total,
-            "total_subtabla": request.totalSubtabla,
+            "total": request.total,
             "fecha_procesamiento": datetime.now().isoformat(),
-            "titulo_generado": titulo_principal,
-            "total_calculado_principal": float(total_principal),
-            "total_calculado_subtabla": float(total_subtabla)
+            "titulo_generado": titulo,
+            "total_calculado": float(total_valor)
         }
-        
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al procesar los datos: {str(e)}")
-    
+        raise HTTPException(status_code=500,
+                            detail=f"Error al procesar los datos: {str(e)}") from e
