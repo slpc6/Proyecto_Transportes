@@ -59,23 +59,6 @@ export const envioService = {
       }
     }
 
-    // Validar registros de sub-tabla
-    for (const registro of datos.registrosSubtabla) {
-      if (!registro.fecha || !registro.placa || !registro.material || !registro.destino) {
-        return {
-          valido: false,
-          mensaje: 'Todos los campos son obligatorios en la sub-tabla'
-        };
-      }
-
-      if (registro.numViajes <= 0 || registro.valorUnitario <= 0) {
-        return {
-          valido: false,
-          mensaje: 'El número de viajes y valor unitario deben ser mayores a 0 en la sub-tabla'
-        };
-      }
-    }
-
     return {
       valido: true,
       mensaje: 'Datos válidos'

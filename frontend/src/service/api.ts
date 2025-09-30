@@ -3,7 +3,7 @@
 //External imports
 import axios from 'axios';
 
-const API = import.meta.env.API_BASE_URL
+const API = 'http://192.168.1.51:8000'
 
 const api = axios.create({
   

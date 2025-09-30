@@ -42,9 +42,7 @@ export interface NuevoRegistroCenizaSubtabla {
 
 export interface DatosCenizaEnvio {
   registros: RegistroCeniza[];
-  registrosSubtabla: RegistroCenizaSubtabla[];
   total: number;
-  totalSubtabla: number;
 }
 
 export interface RespuestaAPI {

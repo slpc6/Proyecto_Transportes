@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './styles/Main.css';
+import './styles/Relaciones.css';
 
 const Relaciones: React.FC = () => {
 	const [selectedOption, setSelectedOption] = useState<string>('');

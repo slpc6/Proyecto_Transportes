@@ -8,8 +8,9 @@ const Menu: React.FC = () => {
 	return (
 		<div className="menu-page-container">
 			<div className="menu-card">
-				<div className="logo-slot" aria-label="Logo principal" />
-
+				<div className="logo-slot" aria-label="Logo principal">
+					<img className="logo-image" src="./images/Logo.jpg" alt="Logo" />
+				</div>
 				<h1 className="menu-title">Menú principal</h1>
 
 				<div className="menu-actions">
